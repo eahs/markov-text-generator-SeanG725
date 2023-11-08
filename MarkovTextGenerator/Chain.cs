@@ -1,4 +1,6 @@
-﻿namespace MarkovTextGenerator;
+﻿using System.Text.RegularExpressions;
+
+namespace MarkovTextGenerator;
 
 public class Chain
 {
@@ -32,8 +34,17 @@ public class Chain
     public void AddSentence(string? sentence)
     {
         // TODO: Break sentence up into word pairs
+        string[] words = Regex.Split(sentence, @"\W+");
+
         // TODO: Add each word pair to the chain by calling AddPair
+        for (int i = 0; i < words.Length - 1; i++)
+        {
+            AddPair(words[i], words[i + 1]);
+        }
+
         // TODO: The last word of any sentence will be paired up with an empty string to show that it is the end of the sentence
+        AddPair(words[words.Length - 1], "");
+
     }
 
     // Adds a pair of words to the chain that will appear in order
@@ -82,10 +93,21 @@ public class Chain
             List<Word> choices = Words[word];
             double test = _rand.NextDouble();
 
-            Console.WriteLine("I picked the number " + test);
+            foreach (Word s in choices)
+            {
+                test -= s.Probability;
+                if (test <= 0)
+                {
+                    return s.ToString();
+                }
+            }
         }
+        else
+        {
+            throw new Exception("Word not found in dictionary");
+        };
 
-        return "idkbbq";
+        return "error in Chain.cs > GetNextWord";
     }
 
     /// <summary>
@@ -96,7 +118,16 @@ public class Chain
     /// <returns></returns>
     public string GenerateSentence(string startingWord)
     {
-        return "";
+        string sentence = startingWord;
+        string nextWord = startingWord;
+
+        while (nextWord != "")
+        {
+            nextWord = GetNextWord(nextWord);
+            sentence += " " + nextWord;
+        }
+
+        return sentence;
     }
 
     /// <summary>
